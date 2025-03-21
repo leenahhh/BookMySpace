@@ -25,12 +25,14 @@
         "@schedule-x/theme-default": "^2.21.2",
         "@schedule-x/vue": "^2.19.2",
         "@shadcn/ui": "^0.0.4",
+        "@vuepic/vue-datepicker": "^11.0.2",
         "@vueuse/core": "^12.8.2",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "lucide-vue-next": "^0.477.0",
         "reka-ui": "^2.0.2",
         "tailwind-merge": "^3.0.2",
-        "tailwindcss-animate": "^1.0.7"
+        "tailwindcss-animate": "^1.0.7",
+        "vue-datepicker-next": "^1.0.3"
     }
 }

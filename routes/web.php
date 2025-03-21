@@ -5,6 +5,8 @@ use App\Http\Controllers\StallController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Models\Stall; // Import the Stall model
+use Illuminate\Http\Request;
 
 Auth::routes(['verify' => true]);  // This enables email verification routes
 
@@ -52,3 +54,9 @@ Route::get('/dashboard', fn () => Inertia::render('Dashboard'))
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+Route::post('/stalls', [StallController::class, 'store']);
+
+    // In routes/web.php or api.php
+Route::get('/stalls', [StallController::class, 'index']);  // Adjust according to your controller
+
+    

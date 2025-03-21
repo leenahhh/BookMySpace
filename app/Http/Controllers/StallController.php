@@ -9,20 +9,49 @@ class StallController extends Controller
 {
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
+        // Validation
+        $validated = $request->validate([
             'stallName' => 'required|string|max:255',
-            'stallDescription' => 'required|string',
-            'stallDate' => 'required|date|after:today', // Must be in the future
-            'stallLocation' => 'required|string|max:255',
-            'startTime' => 'required|date_format:H:i',
-            'endTime' => 'required|date_format:H:i|after:startTime', // End time must be later than start time
+            'stallDescription' => 'required|string|max:1000',
+            'stallDate' => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) {
+                    $dayOfWeek = \Carbon\Carbon::parse($value)->dayOfWeek; // Sunday=0, Monday=1, Tuesday=2, ...
+                    if (!in_array($dayOfWeek, [2,3,4])) {
+                        $fail('The ' . $attribute . ' must be a Tuesday, Wednesday or Thursday.');
+                    }
+                },
+            ],
+            'stallLocation' => 'required|string',
+            'timeRange' => 'required|string',
             'contactEmail' => 'required|email',
-            'stallBookingCost' => 'required|numeric|min:1', // Must be at least 1
-            'isAvailable' => 'required|boolean',
         ]);
 
-        Stall::create($validatedData);
+        // Calculate stall price based on location
+        $stallPrice = 0;
+        if ($request->stallLocation == 'Main Hall') {
+            $stallPrice = 5000;
+        } elseif ($request->stallLocation == 'Outdoor Area') {
+            $stallPrice = 3000;
+        }
 
-        return response()->json(['message' => 'Stall created successfully!']);
+        // Save the stall data to the database
+        Stall::create([
+            'stall_name' => $request->stallName,
+            'stall_description' => $request->stallDescription,
+            'stall_date' => $request->stallDate,
+            'stall_location' => $request->stallLocation,
+            'time_range' => $request->timeRange,
+            'contact_email' => $request->contactEmail,
+            'stall_price' => $stallPrice,
+        ]);
+
+        return response()->json(['success' => 'Stall booked successfully!']);
+    }
+
+    public function index() {
+        $stalls = Stall::all(); // Assuming you have a Stall model
+        return response()->json($stalls);
     }
 }

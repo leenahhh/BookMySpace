@@ -13,16 +13,15 @@ return new class extends Migration
     {
         Schema::create('stalls', function (Blueprint $table) {
             $table->id();
-            $table->string('stallName');
-            $table->text('stallDescription');
-            $table->date('stallDate');
-            $table->string('stallLocation');
-            $table->time('startTime');
-            $table->time('endTime');
-            $table->string('contactEmail');
-            $table->decimal('stallBookingCost', 8, 2);
-            $table->boolean('isAvailable')->default(true);
+            $table->string('stall_name');
+            $table->text('stall_description');
+            $table->date('stall_date');
+            $table->string('stall_location');
+            $table->string('time_range');
+            $table->string('contact_email');
+            $table->decimal('stall_price', 10, 2); // Price based on location
             $table->timestamps();
+
         });
     }
 
