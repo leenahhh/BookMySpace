@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Models\BusinessProfile;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -38,11 +39,17 @@ class AuthenticatedSessionController extends Controller
         if ($role === 'customer') {
             return redirect()->route('customer');
         } elseif ($role === 'entrepreneur') {
-            return redirect()->route('entrepreneur');
+            $profile= BusinessProfile::where("user_id",Auth::user()->id)->exists();
+            if($profile){
+                return redirect()->route('entrepreneur');
+            }
+            else{
+                return redirect()->route('business.reg');
+            }
         } elseif ($role === 'club') {
             return redirect()->route('club');
         } elseif ($role === 'admin') {
-            return redirect()->route('dashboard');
+            return redirect()->route('profile.get');
         }
 
         // Default redirect (in case no role matches)

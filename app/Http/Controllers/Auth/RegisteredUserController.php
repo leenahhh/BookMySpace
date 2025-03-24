@@ -29,7 +29,7 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         // Validate the incoming request
         $request->validate([
@@ -50,9 +50,9 @@ class RegisteredUserController extends Controller
                     }
                     
                     // Check if the email exists in the students table
-                    if (!DB::table('students')->where('email', $value)->exists()) {
-                        return $fail('This email address does not exist in the APIIT database.');
-                    }
+                    // if (!DB::table('students')->where('email', $value)->exists()) {
+                    //     return $fail('This email address does not exist in the APIIT database.');
+                    // }
                 },
             ],
             'password' => ['required', 'confirmed', 'min:12', Rules\Password::defaults()], // Added min:12 rule
@@ -70,23 +70,12 @@ class RegisteredUserController extends Controller
         // Fire the Registered event
         event(new Registered($user));
 
-        // Log the user in
-        Auth::login($user);
+        // Check if the user's email is verified
+        if (!$user->hasVerifiedEmail()) {
+            // Log the user in to access verification page
+            Auth::login($user);
 
-        // Redirect to the dashboard
-        // return redirect(route('dashboard', absolute: false));
-        // Redirect according to role
-        switch ($user->role) {
-            case 'customer':
-                return redirect()->route('customer');
-            case 'entrepreneur':
-                return redirect()->route('entrepreneur');
-            case 'club':
-                return redirect()->route('club');
-            case 'admin':
-                return redirect()->route('dashboard');
-            default:
-                return redirect()->route('dashboard'); // fallback
+            return redirect()->route('verification.notice');
         }
     }
 

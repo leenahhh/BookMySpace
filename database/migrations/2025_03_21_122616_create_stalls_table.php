@@ -20,6 +20,9 @@ return new class extends Migration
             $table->string('time_range');
             $table->string('contact_email');
             $table->decimal('stall_price', 10, 2); // Price based on location
+            $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending');
+            $table->string('receipt');
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
 
         });

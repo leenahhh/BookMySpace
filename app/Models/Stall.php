@@ -16,5 +16,7 @@ class Stall extends Model
         'time_range',
         'contact_email',
         'stall_price',
+        'receipt',
+        'user_id'
     ];
 }

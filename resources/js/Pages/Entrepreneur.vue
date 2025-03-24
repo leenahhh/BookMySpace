@@ -1,12 +1,113 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import axios from 'axios';
-//import { ref, computed } from 'vue';
+import { ref, reactive } from 'vue'
+import axios from 'axios'
+import { Inertia } from '@inertiajs/inertia'
 
 
-//dropdown for date
-import { ref } from 'vue';
+const props = defineProps({
+    accepted_reg: {
+      type: Boolean,
+      required: true,
+    },
+});
+
+// State
+const showForm = ref(false)
+const successMessage = ref('')
+const errors = ref({})
+const showPaymentModal = ref(false) // new state
+
+// Reactive form object
+const stall = reactive({
+  stallName: '',
+  stallDescription: '',
+  stallDate: '',
+  stallLocation: '',
+  timeRange: '',
+  contactEmail: '',
+})
+
+// Methods
+const openForm = () => {
+  showForm.value = true
+}
+
+const closeForm = () => {
+  showForm.value = false
+}
+const receiptFile = ref(null)
+
+const handleReceiptUpload = (e) => {
+  receiptFile.value = e.target.files[0]
+}
+
+const submitForm = async () => {
+  try {
+    const response = await axios.post('/stalls', { ...stall })
+
+    if (response.data.success) {
+      successMessage.value = response.data.message
+      showPaymentModal.value = true
+    }
+    // const response = await axios.post('/stalls', { ...stall })
+
+    // successMessage.value = response.data.success
+
+    // Clear form
+    // stall.stallName = ''
+    // stall.stallDescription = ''
+    // stall.stallDate = ''
+    // stall.stallLocation = ''
+    // stall.timeRange = ''
+    // stall.contactEmail = ''
+    // errors.value = {}
+    // Open the payment receipt modal
+    showPaymentModal.value = true
+  } catch (error) {
+    if (error.response) {
+      if (error.response.status === 422) {
+        errors.value = error.response.data.errors
+      } else if (error.response.status === 409) {
+        alert(error.response.data.error) // ❗ Show overlap error
+      }
+    }
+  }
+}
+
+const submitPaymentReceipt = () => {
+  if (!receiptFile.value) {
+    alert('Please upload a payment receipt.')
+    return
+  }
+
+  const formData = new FormData()
+  formData.append('receipt', receiptFile.value)
+  formData.append('stallName', stall.stallName)
+  formData.append('stallDescription', stall.stallDescription)
+  formData.append('stallDate', stall.stallDate)
+  formData.append('stallLocation', stall.stallLocation)
+  formData.append('timeRange', stall.timeRange)
+  formData.append('contactEmail', stall.contactEmail)
+
+  Inertia.post('/stallPayment', formData, {
+    preserveScroll: true,
+    onSuccess: () => {
+      alert('Payment receipt submitted successfully!')
+      showPaymentModal.value = false
+
+      // Clear form
+      Object.keys(stall).forEach(key => (stall[key] = ''))
+      receiptFile.value = null
+    },
+    onError: (errors) => {
+      console.error(errors)
+      alert('Failed to submit payment receipt. Please check your input.')
+    }
+  })
+}
+
 
 const weeks = 4;
 const weekdays = ['Tuesday', 'Wednesday', 'Thursday'];
@@ -42,7 +143,6 @@ const generateAvailableDates = () => {
 // Store available dates
 const availableDates = generateAvailableDates();
 
-
 </script>
 
 <template>
@@ -54,6 +154,24 @@ const availableDates = generateAvailableDates();
         Welcome Entrepreneur!
       </h2>
     </template>
+    
+    <div class="flex justify-center items-center h-40 bg-gray-900">
+      <div v-if="accepted_reg" class="flex items-center gap-6">
+        <h2 class="text-3xl font-bold text-white">Book your stalls</h2>
+        <button
+        @click="openForm"
+        class="text-white py-3 px-6 rounded-2xl bg-cover bg-center shadow-lg hover:scale-105 transition-transform duration-300 text-2xl font-bold"
+        style="background-image: url('/images/button.png');"
+        >
+        here
+      </button>
+      </div>
+      <div v-else>
+        <h2 class="text-3xl font-bold text-white">Your Business is still pending approval</h2>
+      </div>
+    </div>
+    
+    
     
     <div class="py-12">
       <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -146,18 +264,6 @@ const availableDates = generateAvailableDates();
               </div>
           </div>
 
-            <div class="flex justify-center items-center h-40 bg-gray-900">
-              <div class="flex items-center gap-6">
-                <h2 class="text-3xl font-bold text-white">Book your stalls</h2>
-                <button
-                  @click="openForm"
-                  class="text-white py-3 px-6 rounded-2xl bg-cover bg-center shadow-lg hover:scale-105 transition-transform duration-300 text-2xl font-bold text-white"
-                  style="background-image: url('/images/button.png');"
-                >
-                  here
-                </button>
-              </div>
-            </div>
 
 
             <!-- Modal for stall creation -->
@@ -195,6 +301,8 @@ const availableDates = generateAvailableDates();
                     />
                     <p v-if="errors.stallDate" class="text-red-500 text-sm">{{ errors.stallDate }}</p>
                   </div> -->
+
+                  <!-- Works-Stall date -->
                   <div class="mb-4 col-span-2">
                     <label for="stallDate" class="block text-sm font-medium text-gray-700">Stall Date</label>
                     <select v-model="stall.stallDate" id="stallDate" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
@@ -209,6 +317,7 @@ const availableDates = generateAvailableDates();
                     </select>
                     <p v-if="errors.stallDate" class="text-red-500 text-sm">{{ errors.stallDate }}</p>
                   </div>
+
                   
                   <!-- Stall Location -->
                   <div class="mb-4 col-span-2">
@@ -227,7 +336,7 @@ const availableDates = generateAvailableDates();
                     <p v-if="stall.stallLocation === 'Level 6'" class="text-green-600 text-sm">Price for Level 6: LKR 3000</p>
                   </div>
 
-                  <!-- Time Range -->
+                  <!-- Time Range works-->
                   <div class="mb-4 col-span-2">
                     <label for="timeRange" class="block text-sm font-medium text-gray-700">Time Range</label>
                     <select v-model="stall.timeRange" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
@@ -239,6 +348,7 @@ const availableDates = generateAvailableDates();
                     <p v-if="errors.timeRange" class="text-red-500 text-sm">{{ errors.timeRange }}</p>
                   </div>
 
+
                   <!-- Contact Email -->
                   <div class="mb-4 col-span-2">
                     <label for="contactEmail" class="block text-sm font-medium text-gray-700">Contact Email</label>
@@ -248,12 +358,69 @@ const availableDates = generateAvailableDates();
 
                   <!-- Submit and Close Buttons -->
                   <div class="col-span-2 flex space-x-4 justify-center">
-                    <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">Book Stall</button>
+                    <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">Send Stall Request</button>
                     <button type="button" @click="closeForm" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">Close</button>
                   </div>
                 </form>
               </div>
             </div>
+
+            <!-- Payment Receipt Modal -->
+            <div v-if="showPaymentModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+              <div class="bg-white p-6 rounded-2xl w-11/12 max-w-md shadow-2xl max-h-screen overflow-y-auto animate-fade-in">
+                
+                <!-- Modal Title -->
+                <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Upload Payment Receipt</h2>
+
+                <!-- Booking Details Summary -->
+                <div class="bg-gray-50 p-4 rounded-lg mb-4 shadow-sm space-y-1 text-sm text-gray-700">
+                  <p><span class="font-semibold">Name:</span> {{ stall.stallName }}</p>
+                  <p><span class="font-semibold">Description:</span> {{ stall.stallDescription }}</p>
+                  <p><span class="font-semibold">Date:</span> {{ stall.stallDate }}</p>
+                  <p><span class="font-semibold">Location:</span> {{ stall.stallLocation }}</p>
+                  <p><span class="font-semibold">Time Slot:</span> {{ stall.timeRange }}</p>
+                  <p><span class="font-semibold">Email:</span> {{ stall.contactEmail }}</p>
+                  <p v-if="stall.stallLocation === 'Level 4'" class="text-green-600 font-semibold">Total: LKR 1500</p>
+                  <p v-if="stall.stallLocation === 'Level 6'" class="text-green-600 font-semibold">Total: LKR 3000</p>
+                </div>
+
+                <!-- Receipt Upload Form -->
+                <form @submit.prevent="submitPaymentReceipt" class="space-y-4">
+                  <!-- Receipt Upload -->
+                  <div>
+                    <label for="receipt" class="block text-sm font-medium text-gray-700 mb-1">Payment Receipt (Image or PDF)</label>
+                    <input
+                      type="file"
+                      id="receipt"
+                      @change="handleReceiptUpload"
+                      accept=".jpg,.jpeg,.png,.pdf"
+                      required
+                      class="block w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                    />
+                  </div>
+
+                  <!-- Buttons -->
+                  <div class="flex justify-center gap-4 pt-2">
+                    <button
+                      type="submit"
+                      class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-xl shadow-md transition duration-300"
+                    >
+                      Submit Receipt
+                    </button>
+                    <button
+                      type="button"
+                      @click="showPaymentModal = false"
+                      class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-xl shadow-md transition duration-300"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+
+              </div>
+            </div>
+
+
           </div>
         </div>
       </div>
@@ -262,50 +429,3 @@ const availableDates = generateAvailableDates();
   </AuthenticatedLayout>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      showForm: false,
-        stall: {
-            stallName: '',
-            stallDescription: '',
-            stallDate: '',
-            stallLocation: '',
-            timeRange: '',
-            contactEmail: '',
-        },
-        errors: {},
-        successMessage: '',
-    };
-  },
-  methods: {
-    openForm() {
-      this.showForm = true;
-    },
-    closeForm() {
-      this.showForm = false;
-    },
-    async submitForm() {
-        try {
-            const response = await axios.post('/stalls', {
-                stallName: this.stall.stallName,
-                stallDescription: this.stall.stallDescription,
-                stallDate: this.stall.stallDate,
-                stallLocation: this.stall.stallLocation,
-                timeRange: this.stall.timeRange,
-                contactEmail: this.stall.contactEmail,
-            });
-
-            this.successMessage = response.data.success;
-            this.stall = {}; // Clear the form after submission
-        } catch (error) {
-            if (error.response && error.response.status === 422) {
-                this.errors = error.response.data.errors;
-            }
-        }
-    },
-
-  },
-};
-</script>
