@@ -228,7 +228,7 @@ const availableDates = generateAvailableDates();
 
       <div class="flex flex-col overflow-y-auto max-h-full gap-6">
         <div
-          v-if="user_stall > 0"
+          v-if="user_stall.length > 0"
           v-for="stall in user_stall"
           :key="stall.id"
           class="bg-white shadow-md rounded-xl p-5 border border-gray-100 w-full"
