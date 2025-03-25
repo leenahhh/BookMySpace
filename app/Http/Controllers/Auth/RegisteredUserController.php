@@ -49,10 +49,10 @@ class RegisteredUserController extends Controller
                         return $fail('The email must be a valid APIIT email address.');
                     }
                     
-                    // Check if the email exists in the students table
-                    // if (!DB::table('students')->where('email', $value)->exists()) {
-                    //     return $fail('This email address does not exist in the APIIT database.');
-                    // }
+                    //Check if the email exists in the students table
+                    if (!DB::table('students')->where('email', $value)->exists()) {
+                        return $fail('This email address does not exist in the APIIT database.');
+                    }
                 },
             ],
             'password' => ['required', 'confirmed', 'min:12', Rules\Password::defaults()], // Added min:12 rule
