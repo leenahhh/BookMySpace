@@ -20,18 +20,21 @@ class StallController extends Controller
 
         $user= Auth::id();
         $profiles= BusinessProfile::where("user_id",$user)->where("status","accepted")->exists();
+        $stalls= Stall::with(['user', 'businessProfile'])->where("user_id",$user)->get();
 
         return Inertia::render('Entrepreneur', [
-            'accepted_reg'=> $profiles
+            'accepted_reg'=> $profiles,
+            'user_stall'=>$stalls
         ]);
     }
 
     public function store(Request $request)
     {
+        // Check if the user already has a business profile
+        $userId = Auth::id();
+
         // Validation
         $validated = $request->validate([
-            'stallName' => 'required|string|max:255',
-            'stallDescription' => 'required|string|max:1000',
             'stallDate' => [
                 'required',
                 'date',
@@ -46,6 +49,7 @@ class StallController extends Controller
             'timeRange' => 'required|string',
             'contactEmail' => 'required|email',
         ]);
+
 
         $overlapping = Stall::where('stall_date', $request->stallDate)
                             ->where('stall_location', $request->stallLocation)
@@ -66,6 +70,8 @@ class StallController extends Controller
 
     public function stallPayment(Request $request){
 
+        $receiptPath = $request->file('receipt')->store('receipts', 's3');
+        $receiptUrl = env('AWS_URL') . '/' . $receiptPath;
 
         // Calculate stall price based on location
         $stallPrice = 0;
@@ -75,14 +81,10 @@ class StallController extends Controller
             $stallPrice = 1500;
         }
 
-        $receiptPath = $request->file('receipt')->store('receipts', 's3');
-        $receiptUrl = env('AWS_URL') . '/' . $receiptPath;
-
+        $businessId = BusinessProfile::where('user_id', Auth::id())->first()->id;
 
         // Save the stall data to the database
         Stall::create([
-            'stall_name' => $request->stallName,
-            'stall_description' => $request->stallDescription,
             'stall_date' => $request->stallDate,
             'stall_location' => $request->stallLocation,
             'time_range' => $request->timeRange,
@@ -90,15 +92,12 @@ class StallController extends Controller
             'stall_price' => $stallPrice,
             'user_id'=>Auth::id(),
             'receipt'=>$receiptUrl,
-
+            'business_id'=>$businessId,
         ]);
 
         return redirect()->route('entrepreneur');
     }
 
-    public function index() {
-        $stalls = Stall::all(); // Assuming you have a Stall model
-        return response()->json($stalls);
-    }
+    
 
 }

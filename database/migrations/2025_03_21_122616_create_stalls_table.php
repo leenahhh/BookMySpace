@@ -13,8 +13,6 @@ return new class extends Migration
     {
         Schema::create('stalls', function (Blueprint $table) {
             $table->id();
-            $table->string('stall_name');
-            $table->text('stall_description');
             $table->date('stall_date');
             $table->string('stall_location');
             $table->string('time_range');
@@ -23,6 +21,8 @@ return new class extends Migration
             $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending');
             $table->string('receipt');
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('business_id')->nullable()->constrained('business_profiles')->onDelete('cascade');
+            $table->string('stall_rejected_reason')->nullable();
             $table->timestamps();
 
         });

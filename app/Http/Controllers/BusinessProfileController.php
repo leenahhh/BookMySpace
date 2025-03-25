@@ -1,14 +1,15 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\BusinessProfile;
-use Illuminate\Http\Request;
-use Illuminate\Auth\Events\Verified;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use App\Models\Stall;
+use Illuminate\Http\Request;
+use App\Models\BusinessProfile;
+use Illuminate\Auth\Events\Verified;
+use Illuminate\Support\Facades\Auth;
 use App\Models\BusinessProfileHistory;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 
 
@@ -75,11 +76,24 @@ class BusinessProfileController extends Controller
         ->whereIn('status', ['accepted', 'rejected'])
         ->get();
 
+       // Fetch pending stalls with user and business profile
+        $stalls = Stall::with(['user', 'businessProfile'])
+        ->where('status', 'pending')
+        ->get();
+
+        // Fetch accepted or rejected stalls with user and business profile
+        $processedStalls = Stall::with(['user', 'businessProfile'])
+        ->whereIn('status', ['accepted', 'rejected'])
+        ->get();
+
+
             
         // Pass pending profiles data to the front end with Inertia and render Dashboard.vue
         return Inertia::render('Dashboard', [
             'profiles' => $profiles,
             'processedProfiles' => $processedProfiles,
+            'stalls' => $stalls,
+            'processedStalls' => $processedStalls,
         ]);
     }
 
@@ -101,6 +115,28 @@ class BusinessProfileController extends Controller
     {
         $profile = BusinessProfile::findOrFail($id);
         $profile->delete();
+
+        return redirect()->route('profile.get');
+    }
+
+    public function updateStallStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:accepted,rejected',
+            'stall_rejected_reason' => 'required_if:status,rejected|max:255',
+        ]);
+    
+        $stall = Stall::findOrFail($id);
+        $stall->status = $request->status;
+        $stall->stall_rejected_reason = $request->stall_rejected_reason ?? null;
+        $stall->save();
+        return redirect()->route('profile.get'); // or Inertia::render, but redirect is quick
+    }
+
+    public function destroyStall($id)
+    {
+        $stall = Stall::findOrFail($id);
+        $stall->delete();
 
         return redirect()->route('profile.get');
     }

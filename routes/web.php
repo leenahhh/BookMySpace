@@ -75,7 +75,9 @@ Route::middleware(['auth', 'verified'])->group(function (){
     Route::post('/stallPayment', [StallController::class, 'stallPayment']);
     Route::get('/businessReg', [BusinessProfileController::class, 'registration'])->name('business.reg');
     Route::put('/profile/{id}/status', [BusinessProfileController::class, 'updateStatus'])->name('profile.updateStatus');
+    Route::put('/stall/{id}/status', [BusinessProfileController::class, 'updateStallStatus'])->name('profile.updateStallStatus');
     Route::delete('/profile/{id}', [BusinessProfileController::class, 'destroy'])->name('profile.delete');
+    Route::delete('/stall/{id}', [BusinessProfileController::class, 'destroyStall'])->name('stall.delete');
 
 });
 

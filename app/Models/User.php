@@ -47,9 +47,14 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
-    public function businessProfile()
+    public function businessProfiles()
     {
-        return $this->hasOne(BusinessProfile::class, 'id');
+        return $this->hasOne(BusinessProfile::class);
+    }
+
+    public function stalls()
+    {
+        return $this->hasMany(Stall::class);
     }
 
 }

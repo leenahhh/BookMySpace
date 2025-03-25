@@ -56,7 +56,7 @@ class RegisteredUserController extends Controller
                 },
             ],
             'password' => ['required', 'confirmed', 'min:12', Rules\Password::defaults()], // Added min:12 rule
-            'role' => ['required', 'string', 'in:customer,entrepreneur,club,admin'],
+            'role' => ['required', 'string', 'in:customer,entrepreneur,club'],
         ]);
 
         // Create the user in the database

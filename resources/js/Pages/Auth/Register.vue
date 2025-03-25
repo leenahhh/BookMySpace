@@ -67,7 +67,6 @@ const submit = () => {
                     <option value="customer">Customer</option>
                     <option value="entrepreneur">Entrepreneur</option>
                     <option value="club">Club/Society</option>
-                    <option value="admin">Admin</option>
                 </select>
                 <InputError class="mt-2" :message="form.errors.role" />
             </div>
