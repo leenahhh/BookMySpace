@@ -14,7 +14,7 @@ import { Link } from '@inertiajs/vue3';
         <!-- Logo (Top Left) -->
         <div class="absolute top-6 left-6 z-20">
             <Link href="/">
-                <img src="/images/bms.png" alt="Website Logo" class="w-[460px] h-auto" />
+                <img src="/images/Bms.png" alt="Website Logo" class="w-[460px] h-auto" />
             </Link>
         </div>
 
