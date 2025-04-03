@@ -1,161 +1,207 @@
 <script setup>
-import GuestLayout from '@/Layouts/GuestLayout.vue';
-import { Head } from '@inertiajs/vue3';
-import { ref } from 'vue';
-import axios from 'axios';
-import { Inertia } from '@inertiajs/inertia';
+import GuestLayout from '@/Layouts/GuestLayout.vue'
+import { Head, useForm } from '@inertiajs/vue3'
+import { ref, onMounted } from 'vue'
+import { gsap } from 'gsap'
+import PrimaryButton from '@/Components/PrimaryButton.vue'
+import InputLabel from '@/Components/InputLabel.vue'
+import TextInput from '@/Components/TextInput.vue'
+import InputError from '@/Components/InputError.vue'
+import { ImagePlus } from 'lucide-vue-next'
 
-const businessName = ref('');
-const productType = ref('');
-const productDescription = ref('');
-const businessSocials = ref('');
-const logoFile = ref(null);
-const profilePicUrl = ref(''); // fallback image
-const loading = ref(false);
+const logoUrl = ref('')
+const formRef = ref(null)
 
-
+const form = useForm({
+  name: '',
+  product_type: '',
+  desc: '',
+  socials: '',
+  logo: null,
+})
 
 const handleImageUpload = (event) => {
-  logoFile.value = event.target.files[0];
-  if (logoFile.value) {
-    profilePicUrl.value = URL.createObjectURL(logoFile.value);
+  form.logo = event.target.files[0]
+  if (form.logo) {
+    logoUrl.value = URL.createObjectURL(form.logo)
   }
-};
+}
 
-const saveProfile = () => {
-  if (loading.value) return;
-  loading.value = true;
+const submitForm = () => {
+  // Clear previous logo error
+  form.clearErrors('logo')
 
-  const formData = new FormData();
-  formData.append('name', businessName.value);
-  formData.append('product_type', productType.value);
-  formData.append('desc', productDescription.value);
-  formData.append('socials', businessSocials.value);
-  formData.append('logo', logoFile.value);
+  // Manual validation for logo upload
+  if (!form.logo) {
+    form.setError('logo', 'Please upload a logo.')
+    return
+  }
 
-  Inertia.post('/save-business-profile', formData, {
+  if (form.processing) return
+
+  form.post('/save-business-profile', {
+    forceFormData: true,
     onSuccess: () => {
-      // optional: reset form fields
-      businessName.value = '';
-      productType.value = '';
-      productDescription.value = '';
-      businessSocials.value = '';
-      profilePicUrl.value = '';
-      logoFile.value = null;
+      form.reset()
+      logoUrl.value = ''
+      logoError.value = null
     },
     onFinish: () => {
-      loading.value = false;
+      form.clearErrors() // Optional: clears all errors on finish
     },
-    onError: (errors) => {
-      console.error(errors);
-    },
-  });
-};
+  })
+}
 
-
-
+onMounted(() => {
+  gsap.fromTo(
+    formRef.value,
+    { x: -70, opacity: 0, filter: 'blur(10px)' },
+    {
+      x: 0,
+      opacity: 1,
+      filter: 'blur(0px)',
+      duration: 0.8,
+      ease: 'power3.out',
+      delay: 0.3
+    }
+  )
+})
 </script>
 
 <template>
     <GuestLayout>
-        <Head title="Business Registration" />
+      <Head title="Business Registration" />
+  
+      <div ref="formRef" class="min-h-screen flex flex-col items-center justify-center">
+        <h1 class="text-3xl font-bold mb-6 text-center text-gray-800 font-gSans">
+          Register Your Business
+        </h1>
+  
+        <form @submit.prevent="submitForm" class="w-full max-w-xl flex flex-col gap-4">
+            <!-- Logo Upload Section -->
+            <div class="flex flex-col justify-center items-center gap-4 mb-2 relative">
+                <!-- Upload Preview Container -->
+                <div
+                    class="relative group w-24 h-24 bg-gray-100/25 rounded-full overflow-hidden shadow-md flex items-center justify-center"
+                >
+                    <!-- If logo uploaded, show the image -->
+                    <img
+                        v-if="logoUrl"
+                        :src="logoUrl"
+                        alt="Logo"
+                        class="w-full h-full object-cover transition duration-300"
+                    />
 
-        <div class="min-h-screen flex flex-col items-center justify-center">
-            
-                <h1 class="text-3xl font-bold mb-4 text-center text-gray-800">Register Your Business</h1>
-
-                <div class="flex flex-col items-center w-full mb-2">
-                    <!-- Profile Picture Upload -->
-                    <div class="flex items-center gap-4">
-                        <div class="flex w-16 aspect-square bg-gray-300 rounded-full overflow-hidden">
-                            <template v-if="profilePicUrl">
-                                <img
-                                    :src="profilePicUrl"
-                                    alt="Profile Picture"
-                                    class="w-16 h-16 object-fit"
-                                />
-                            </template>
-                            <template v-else>
-                                
-                            </template>
-                        </div>
-                        <input
-                            type="file"
-                            id="profile_pic"
-                            @change="handleImageUpload"
-                            accept=".jpg, .png, .jpeg"
-                            class="hidden"
-                        />
-                        <!-- Custom button styled as a label -->
-                        <label
-                            for="profile_pic"
-                            class="cursor-pointer w-fit bg-black text-white p-2 rounded-xl font-semibold shadow-md hover:shadow-xl transition duration-30"
-                        >
-                            Upload Logo
-                        </label>
+                    <!-- If no logo uploaded, show the ImagePlus icon -->
+                    <div
+                        v-else
+                        class="text-gray-500 transition duration-300 pointer-events-none"
+                    >
+                        <ImagePlus class="h-12 w-12" />
                     </div>
 
-                    <!-- Single-column Business Form Fields -->
-                    <div class="w-full flex flex-col gap-2">
-                        <div>
-                            <label class="block mb-1 text-gray-700 font-semibold">Business Name</label>
-                            <input
-                                v-model="businessName"
-                                type="text"
-                                placeholder="Enter business name"
-                                class="w-full border rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-purple-400 shadow-sm"
-                            />
-                        </div>
-                        <div>
-                            <label class="block mb-1 text-gray-700 font-semibold">Product Type</label>
-                            <input
-                                v-model="productType"
-                                type="text"
-                                placeholder="e.g., Handicrafts, Services"
-                                class="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-purple-400 shadow-sm"
-                            />
-                        </div>
-                        <div>
-                            <label class="block mb-1 text-gray-700 font-semibold">Product Description</label>
-                            <textarea
-                                v-model="productDescription"
-                                placeholder="Describe your products or services..."
-                                rows="4"
-                                class="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-purple-400 shadow-sm"
-                            ></textarea>
-                        </div>
-                        <div>
-                            <label class="block mb-1 text-gray-700 font-semibold">Business Socials</label>
-                            <input
-                                v-model="businessSocials"
-                                type="text"
-                                placeholder="Enter social media links separated by commas"
-                                class="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-purple-400 shadow-sm"
-                            />
-                        </div>
-                    </div>
-
-                    <div class="w-full flex gap-4 mt-8">
-                        <button
-                        @click.prevent="saveProfile"
-                        :disabled="loading"
-                        class="w-full bg-black text-white py-3 rounded-xl font-semibold shadow-md hover:shadow-xl transition duration-300"
-                        >
-                        <template v-if="loading">
-                            <svg class="animate-spin h-5 w-5 inline-block mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
-                            </svg>
-                            Saving...
+                    <!-- Hover Overlay (different logic depending on whether logo is present) -->
+                    <label
+                        for="profile_pic"
+                        :class="[
+                            'absolute inset-0 transition duration-300 cursor-pointer',
+                            logoUrl
+                            ? 'bg-black/40 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100'
+                            : 'bg-black/10 group-hover:bg-black/20'
+                        ]"
+                        title="Click to upload logo"
+                    >
+                        <!-- Optional: show icon on hover only when image is present -->
+                        <template v-if="logoUrl">
+                            <ImagePlus class="h-12 w-12 text-gray-200" />
                         </template>
-                        <template v-else>
-                            Save Profile
-                        </template>
-                        </button>
-                    </div>
+                    </label>
                 </div>
-            
-        </div>
+
+                <!-- Hidden File Input -->
+                <input
+                    type="file"
+                    id="profile_pic"
+                    @change="handleImageUpload"
+                    accept=".jpg, .jpeg, .png"
+                    class="hidden"
+                    
+                />
+                <InputError class="mt-1 text-sm" :message="form.errors.logo" />
+
+            </div>
+
+  
+          <!-- Business Name -->
+          <div>
+            <InputLabel for="name" value="Business Name" />
+            <TextInput
+              id="name"
+              v-model="form.name"
+              type="text"
+              placeholder="e.g. Creative Studio, Lanka Crafters"
+              class="mt-1 block w-full"
+              required
+            />
+            <InputError class="mt-1" :message="form.errors.name" />
+          </div>
+  
+          <!-- Product Type -->
+          <div>
+            <InputLabel for="product_type" value="Product Type" />
+            <TextInput
+              id="product_type"
+              v-model="form.product_type"
+              type="text"
+              placeholder="e.g. Handmade Goods, Services, Software"
+              class="mt-1 block w-full"
+              required
+            />
+            <InputError class="mt-1" :message="form.errors.product_type" />
+          </div>
+  
+          <!-- Description -->
+          <div>
+            <InputLabel for="desc" value="Product Description" />
+            <textarea
+              id="desc"
+              v-model="form.desc"
+              rows="5"
+              placeholder="Tell us about what you offer or create..."
+              class="mt-1 w-full rounded-md shadow-sm border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+              required
+            ></textarea>
+            <InputError class="mt-1" :message="form.errors.desc" />
+          </div>
+  
+          <!-- Socials -->
+          <div>
+            <InputLabel for="socials" value="Business Socials" />
+            <TextInput
+              id="socials"
+              v-model="form.socials"
+              type="text"
+              placeholder="e.g. https://instagram.com/yourhandle"
+              class="mt-1 block w-full"
+              required
+            />
+            <InputError class="mt-1" :message="form.errors.socials" />
+          </div>
+  
+          <!-- Submit Button -->
+          <div class="mt-4">
+            <PrimaryButton :processing="form.processing" class="w-full">
+              <template v-if="form.processing">
+                Saving...
+              </template>
+              <template v-else>
+                Save Profile
+              </template>
+            </PrimaryButton>
+          </div>
+        </form>
+      </div>
     </GuestLayout>
 </template>
+  
 

@@ -6,6 +6,8 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { onMounted, ref } from 'vue'
+import { gsap } from 'gsap'
 
 defineProps({
     canResetPassword: {
@@ -27,90 +29,108 @@ const submit = () => {
         onFinish: () => form.reset('password'),
     });
 };
+
+const formRef = ref(null)
+
+onMounted(() => {
+  gsap.fromTo(
+    formRef.value,
+    { x: -70, opacity: 0, filter: 'blur(10px)' },
+    {
+      x: 0,
+      opacity: 1,
+      filter: 'blur(0px)',
+      duration: 0.8,
+      ease: 'power3.out',
+      delay: 0.3
+    }
+  );
+});
+
+const animateAndNavigate = () => {
+  gsap.to(formRef.value, {
+    x: -70,
+    opacity: 0,
+    filter: 'blur(10px)',
+    duration: 0.4,
+    ease: 'power2.in',
+  })
+}
 </script>
 
 <template>
     <GuestLayout>
         <Head title="Log in" />
 
-        <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
-            {{ status }}
-        </div>
+        <form ref="formRef" @submit.prevent="submit" class="w-full max-w-md mx-auto px-2 py-10">
+            <h1 class="text-3xl md:text-[3.2rem] text-gray-800 mb-3 font-gSans">
+                Hello,
+            </h1>
+            <h1 class="font-bold text-3xl md:text-[3.2rem] text-gray-800 mb-8 font-gSans">
+                welcome!
+            </h1>
 
-        <form @submit.prevent="submit">
-            <h1 class="text-center font-bold text-2xl">Welcome Back</h1>
-            <div>
-                <InputLabel for="email" value="Email" />
-
+            <div class="mb-4">
+                <InputLabel for="email" value="Email" class="text-gray-700" />
                 <TextInput
                     id="email"
                     type="email"
-                    class="mt-1 block w-full"
+                    class="mt-1 block w-full rounded-lg border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                     v-model="form.email"
                     required
-                    autofocus
                     autocomplete="username"
-                    title="Enter your email"
                 />
-
-                <InputError class="mt-2" :message="form.errors.email" />
+                <InputError class="mt-1 text-sm text-red-500" :message="form.errors.email" />
             </div>
 
-            <div class="mt-4">
-                <InputLabel for="password" value="Password" />
-
+            <div class="mb-4">
+                <InputLabel for="password" value="Password" class="text-gray-700" />
                 <TextInput
                     id="password"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="mt-1 block w-full rounded-lg border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                     v-model="form.password"
                     required
                     autocomplete="current-password"
-                    title="Enter your password"
                 />
-
-                <InputError class="mt-2" :message="form.errors.password" />
+                <InputError class="mt-1 text-sm text-red-500" :message="form.errors.password" />
             </div>
 
-
-            <div class="mt-4 flex items-center justify-between">
-                <label class="flex items-center">
+            <div class="flex items-center justify-between mb-6">
+                <label class="flex items-center text-sm text-gray-600">
                     <Checkbox name="remember" v-model:checked="form.remember" />
-                    <span class="ms-2 text-sm text-gray-600"
-                        >Remember me</span
-                    >
+                    <span class="ml-2">Remember me</span>
                 </label>
-            <!-- </div>
-
-            <div class="mt-4 flex items-center justify-end"> -->
                 <Link
                     v-if="canResetPassword"
                     :href="route('password.request')"
-                    class="rounded-md text-sm text-black-800 underline hover:text-purple-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    class="text-sm text-purple-600 hover:underline"
+                    @click.prevent="animateAndNavigate()"
                 >
                     Forgot your password?
                 </Link>
             </div>
-            <div>
 
-                <PrimaryButton
-                    class="mt-5 w-full justify-center bg-[url('/public/images/button.png')] bg-cover bg-center text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-xl transition duration-300"
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
+            <PrimaryButton
+                class="w-full"
+                :class="{ 'opacity-50': form.processing }"
+                :disabled="form.processing"
+            >
+                Log in
+            </PrimaryButton>
+
+            <div class="text-sm mt-6 text-center">
+                Don’t have an account?
+                <Link
+                    :href="route('register')"
+                    @click.prevent="animateAndNavigate(route('register'))"
+                    class="ml-1 text-purple-600 hover:underline"
                 >
-                    Log in
-                </PrimaryButton>
-
-            </div>
-            <div class="text-sm mt-5 flex justify-end">
-                Don't have an Account? 
-                <Link 
-                    :href="route('register')" 
-                    class="ml-1 text-black-800 underline hover:text-purple-600">
                     Sign Up
                 </Link>
             </div>
-
         </form>
     </GuestLayout>
 </template>
+
+

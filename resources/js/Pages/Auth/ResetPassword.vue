@@ -5,6 +5,8 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, useForm } from '@inertiajs/vue3';
+import { onMounted, ref } from 'vue'
+import { gsap } from 'gsap'
 
 const props = defineProps({
     email: {
@@ -29,13 +31,43 @@ const submit = () => {
         onFinish: () => form.reset('password', 'password_confirmation'),
     });
 };
+
+const formRef = ref(null)
+
+onMounted(() => {
+  gsap.fromTo(
+    formRef.value,
+    { x: -70, opacity: 0, filter: 'blur(10px)' },
+    {
+      x: 0,
+      opacity: 1,
+      filter: 'blur(0px)',
+      duration: 0.8,
+      ease: 'power3.out',
+      delay: 0.3
+    }
+  )
+})
+
+const animateAndNavigate = () => {
+  gsap.to(formRef.value, {
+    x: -70,
+    opacity: 0,
+    filter: 'blur(10px)',
+    duration: 0.4,
+    ease: 'power2.in',
+  })
+}
 </script>
 
 <template>
     <GuestLayout>
         <Head title="Reset Password" />
 
-        <form @submit.prevent="submit">
+        <form @submit.prevent="submit" ref="formRef">
+            <h1 class="font-bold text-3xl md:text-4xl text-gray-800 mb-8 font-gSans">
+                Reset Password
+            </h1>
             <div>
                 <InputLabel for="email" value="Email" />
 
