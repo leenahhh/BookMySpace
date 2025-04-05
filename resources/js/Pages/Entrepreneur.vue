@@ -29,8 +29,6 @@ const showPaymentModal = ref(false) // new state
 
 // Reactive form object
 const stall = reactive({
-  stallName: '',
-  stallDescription: '',
   stallDate: '',
   stallLocation: '',
   timeRange: '',

@@ -4,11 +4,11 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StallController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use App\Models\Stall; // Import the Stall model
 use App\Models\BusinessProfile; // Import the BusinessProfile model
 use Illuminate\Http\Request;
 use App\Http\Controllers\BusinessProfileController;
+use Inertia\Inertia;
 
 Auth::routes(['verify' => true]);  // This enables email verification routes
 
@@ -24,7 +24,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
@@ -71,8 +71,11 @@ Route::middleware(['auth', 'verified'])->group(function (){
     Route::put('/stall/{id}/status', [BusinessProfileController::class, 'updateStallStatus'])->name('profile.updateStallStatus');
     Route::delete('/profile/{id}', [BusinessProfileController::class, 'destroy'])->name('profile.delete');
     Route::delete('/stall/{id}', [BusinessProfileController::class, 'destroyStall'])->name('stall.delete');
+    Route::get('/businessProfile', [ProfileController::class, 'profileIndex'])->name('business.profile.get');
+    Route::post('/business-profile/update', [ProfileController::class, 'businessUpdate'])->name('business.profile.update');
 
 });
+
 
    
         

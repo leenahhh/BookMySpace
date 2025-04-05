@@ -101,6 +101,8 @@ function refreshData() {
         Welcome Admin!
       </h2>
     </template>
+
+    
     
     <div class="p-6">
     <h2 class="text-3xl font-semibold text-gray-800 mb-6 border-b-2 border-gray-200 pb-2">
@@ -174,67 +176,6 @@ function refreshData() {
             >
               Reject
             </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-    <div class="p-6">
-    <h2 class="text-3xl font-semibold text-gray-800 mb-6 border-b-2 border-gray-200 pb-2">
-      Processed Requests
-    </h2>
-
-    <!-- Table -->
-    <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-      <thead>
-        <tr class="bg-gray-100">
-          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">ID</th>
-          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Logo</th>
-          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Business Name</th>
-          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Student Name</th>
-          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Product Type</th>
-          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Product Decription</th>
-          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Socials</th>
-          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Status</th>
-          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Rejected Reason</th>
-          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Loop over the business profiles and display each row -->
-        <tr v-for="profile in processedProfiles" :key="profile.id" class="border-t">
-          <td class="py-2 px-4 text-sm text-gray-700">{{ profile.id }}</td>
-          <td class="py-2 px-4 text-sm text-gray-700">
-            <img :src="profile.logo" alt="Logo" class="w-12 h-12 rounded-full"/>
-          </td>
-          <td class="py-2 px-4 text-sm text-gray-700">{{ profile.name }}</td>
-          <td class="py-2 px-4 text-sm text-gray-700">{{ profile.user.name }}</td>
-          <td class="py-2 px-4 text-sm text-gray-700">{{ profile.product_type }}</td>
-          <td class="py-2 px-4 text-sm text-gray-700">{{ profile.desc }}</td>
-          <td class="py-2 px-4 text-sm text-gray-700">
-            <a :href="profile.socials" target="_blank" class="text-blue-500 hover:underline">
-              {{ profile.socials }}
-            </a>
-          </td>
-          <td class="py-2 px-4 text-sm text-gray-700">
-            <span :class="{'text-green-500': profile.status === 'accepted', 'text-red-500': profile.status === 'rejected'}">
-              {{ profile.status }}
-            </span>
-          </td>
-          <!-- Rejected Reason Column -->
-          <td v-if="profile.status == 'rejected'" class="py-2 px-4 text-sm text-gray-700">{{ profile.rejected_reason }}</td>
-          <td v-else class="py-2 px-4 text-sm text-gray-700">None</td>
-          <!-- Accept and Reject Buttons -->
-          <td class="py-2 px-4 text-sm text-gray-700">
-            <!-- Delete Button with margin-right -->
-            <button
-              @click="deleteProfile(profile)"
-              class="bg-red-500 text-white rounded px-3 py-1 hover:bg-red-600 transition w-20 mr-2"
-            >
-              Delete
-            </button>
-            
           </td>
         </tr>
       </tbody>
@@ -333,6 +274,69 @@ function refreshData() {
     </tbody>
   </table>
 </div>
+
+    <div class="p-6">
+    <h2 class="text-3xl font-semibold text-gray-800 mb-6 border-b-2 border-gray-200 pb-2">
+      Processed Requests
+    </h2>
+
+    <!-- Table -->
+    <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+      <thead>
+        <tr class="bg-gray-100">
+          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">ID</th>
+          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Logo</th>
+          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Business Name</th>
+          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Student Name</th>
+          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Product Type</th>
+          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Product Decription</th>
+          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Socials</th>
+          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Status</th>
+          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Rejected Reason</th>
+          <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Loop over the business profiles and display each row -->
+        <tr v-for="profile in processedProfiles" :key="profile.id" class="border-t">
+          <td class="py-2 px-4 text-sm text-gray-700">{{ profile.id }}</td>
+          <td class="py-2 px-4 text-sm text-gray-700">
+            <img :src="profile.logo" alt="Logo" class="w-12 h-12 rounded-full"/>
+          </td>
+          <td class="py-2 px-4 text-sm text-gray-700">{{ profile.name }}</td>
+          <td class="py-2 px-4 text-sm text-gray-700">{{ profile.user.name }}</td>
+          <td class="py-2 px-4 text-sm text-gray-700">{{ profile.product_type }}</td>
+          <td class="py-2 px-4 text-sm text-gray-700">{{ profile.desc }}</td>
+          <td class="py-2 px-4 text-sm text-gray-700">
+            <a :href="profile.socials" target="_blank" class="text-blue-500 hover:underline">
+              {{ profile.socials }}
+            </a>
+          </td>
+          <td class="py-2 px-4 text-sm text-gray-700">
+            <span :class="{'text-green-500': profile.status === 'accepted', 'text-red-500': profile.status === 'rejected'}">
+              {{ profile.status }}
+            </span>
+          </td>
+          <!-- Rejected Reason Column -->
+          <td v-if="profile.status == 'rejected'" class="py-2 px-4 text-sm text-gray-700">{{ profile.rejected_reason }}</td>
+          <td v-else class="py-2 px-4 text-sm text-gray-700">None</td>
+          <!-- Accept and Reject Buttons -->
+          <td class="py-2 px-4 text-sm text-gray-700">
+            <!-- Delete Button with margin-right -->
+            <button
+              @click="deleteProfile(profile)"
+              class="bg-red-500 text-white rounded px-3 py-1 hover:bg-red-600 transition w-20 mr-2"
+            >
+              Delete
+            </button>
+            
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  
 
 <div class="p-6">
   <h2 class="text-3xl font-semibold text-gray-800 mb-6 border-b-2 border-gray-200 pb-2">
