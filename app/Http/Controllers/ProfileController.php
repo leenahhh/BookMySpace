@@ -132,8 +132,8 @@ class ProfileController extends Controller
     {
     // Validate the incoming request
     $request->validate([
-        'content_image' => 'required|file|mimes:jpg,jpeg,png,gif',
         'content_desc' => 'required|string',
+        'content_image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
     ]);
 
     // Get the authenticated user ID

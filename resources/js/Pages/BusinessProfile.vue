@@ -1,7 +1,9 @@
 <script setup>
+import PrimaryButton from '@/Components/PrimaryButton.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link, useForm  } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { Plus } from 'lucide-vue-next';
 
 const props = defineProps({
   processedProfile: {
@@ -57,7 +59,7 @@ const submitForm = () => {
     return;
   }
 
-  if (form.processing) return;
+  // if (form.processing) return;
 
   // Post the data to the server using Inertia's router
   form.post('/content', {
@@ -101,54 +103,59 @@ console.log(JSON.stringify(props.processedProfile,null, 2));
           <img
             :src="processedProfile.logo || '/images/profile.avif'"
             alt="Business Logo"
-            class="w-32 h-32 rounded-full border object-cover shadow"
+            class="w-44 h-44 rounded-full border object-cover shadow"
           />
 
           <!-- Info on the Right -->
-          <div class="flex-1 space-y-2">
+          <div class="flex-1 font-gSans">
             <!-- Business Name -->
-            <h1 class="text-2xl font-extrabold text-gray-900">
+            <h1 class="text-3xl font-semibold text-gray-900">
               {{ processedProfile.name }}
             </h1>
 
-            <!-- Socials -->
-            <div v-if="processedProfile.socials">
-              <a
-                :href="processedProfile.socials"
-                class="ml-2 text-blue-500 hover:underline"
-                target="_blank"
-              >
-                {{ processedProfile.socials }}
-              </a>
-            </div>
-
             <!-- Product Type -->
             <div>
-              <span class="font-medium text-gray-700">Product Type:</span>
-              <span class="ml-2 text-gray-800">{{ processedProfile.product_type }}</span>
+              <p class="text-xl text-gray-800 -mt-1 mb-1">{{ processedProfile.product_type }}</p>
             </div>
 
             <!-- Product Description -->
             <div>
-              <span class="font-medium text-gray-700">Description:</span>
-              <p class="ml-2 text-gray-700">{{ processedProfile.desc }}</p>
+              <p class="text-gray-500">{{ processedProfile.desc }}</p>
             </div>
 
+            <!-- Socials -->
+            <a
+              :href="processedProfile.socials"
+              class="text-purple-500 hover:underline inline-flex items-center gap-1"
+              target="_blank"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link-icon lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              {{ processedProfile.socials }}
+            </a>
+
             <!-- Buttons -->
-            <div class="flex gap-3 mt-4">
+            <div class="flex items-center gap-3 mt-2">
             <Link
                 href="/profile/edit"
-                class="px-4 py-1 bg-white text-black text-sm rounded border border-black hover:bg-gray-100 transition"
+                class="inline-flex items-center justify-center px-6 py-2.5 font-semibold rounded-md border border-gray-800 text-slate-800 flex-1 active:scale-95
+                        hover:-translate-y-0.5 transition-all duration-300 ease-in-out
+                        hover:shadow-[rgba(0,0,0,0.4)_0px_2px_4px,rgba(0,0,0,0.3)_0px_7px_13px_-3px,rgba(0,0,0,0.2)_0px_-3px_0px_inset]
+                        disabled:opacity-75 disabled:cursor-not-allowed"
             >
                 Edit Profile
             </Link>
-
-            <button 
+            <!-- Button to open the modal -->
+            <PrimaryButton 
               @click="openModal"
-              class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+              :icon="true"
+              iconPlacement="left"
+              class="flex-1"
             >
-              + Add Post
-            </button>
+              <template #icon>
+                <Plus />
+              </template>
+              Add Post
+            </PrimaryButton>
 
             <!-- Modal -->
             <div v-if="isModalOpen" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
@@ -162,34 +169,34 @@ console.log(JSON.stringify(props.processedProfile,null, 2));
 
                 <!-- Form -->
                 <form @submit.prevent="submitForm" class="flex flex-col items-center justify-center space-y-4">
-  <!-- Image Upload Area with Polaroid Style -->
-  <div class="w-48 h-48 bg-white border-2 border-gray-400 rounded-md flex justify-center items-center relative">
-    <input 
-      type="file" 
-      @change="handleImageUpload" 
-      accept="image/*" 
-      class="absolute opacity-0 w-48 h-48 cursor-pointer"
-    />
-    <!-- Image Preview -->
-    <div v-if="contentUrl" class="w-full h-full bg-gray-200 rounded-md overflow-hidden">
-      <img :src="contentUrl" alt="Image Preview" class="w-full h-full object-cover" />
-    </div>
-    <!-- Placeholder text for image upload -->
-    <div v-else class="text-center text-gray-400">
-      <p class="text-5xl">+</p> <!-- Adjusted font size for larger text -->
-    </div>
-  </div>
+                  <!-- Image Upload Area with Polaroid Style -->
+                  <div class="w-48 h-48 bg-white border-2 border-gray-400 rounded-md flex justify-center items-center relative">
+                    <input 
+                      type="file" 
+                      @change="handleImageUpload" 
+                      accept="image/*" 
+                      class="absolute opacity-0 w-48 h-48 cursor-pointer"
+                    />
+                    <!-- Image Preview -->
+                    <div v-if="contentUrl" class="w-full h-full bg-gray-200 rounded-md overflow-hidden">
+                      <img :src="contentUrl" alt="Image Preview" class="w-full h-full object-cover" />
+                    </div>
+                    <!-- Placeholder text for image upload -->
+                    <div v-else class="text-center text-gray-400">
+                      <p class="text-5xl">+</p> <!-- Adjusted font size for larger text -->
+                    </div>
+                  </div>
 
-  <!-- Description Field -->
-  <div class="mb-4 w-full max-w-xs">
-    <textarea
-      v-model="form.content_desc"
-      placeholder="Enter description..."
-      rows="4"
-      class="border p-2 w-full rounded"
-    ></textarea>
-    <span v-if="form.errors.content_desc" class="text-red-500 text-sm">{{ form.errors.content_desc }}</span>
-  </div>
+                  <!-- Description Field -->
+                  <div class="mb-4">
+                    <textarea
+                      v-model="form.content_desc"
+                      placeholder="Enter description..."
+                      rows="4"
+                      class="border p-2 w-full rounded"
+                    ></textarea>
+                    <span v-if="form.errors.content_desc" class="text-red-500 text-sm">{{ form.errors.content_desc }}</span>
+                  </div>
 
   <!-- Submit Button and Cancel Button -->
   <div class="flex justify-center gap-4 mt-4">
