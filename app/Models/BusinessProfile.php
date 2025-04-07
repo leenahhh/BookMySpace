@@ -22,6 +22,13 @@ class BusinessProfile extends Model
     public function stalls()
     {
         return $this->hasMany(Stall::class, 'business_id');
+        
+    }
+
+    public function content()
+    {
+        return $this->hasMany(Content::class, 'business_id');
+        
     }
     
 }

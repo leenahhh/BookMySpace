@@ -9,6 +9,7 @@ use App\Models\BusinessProfile; // Import the BusinessProfile model
 use Illuminate\Http\Request;
 use App\Http\Controllers\BusinessProfileController;
 use Inertia\Inertia;
+use App\Http\Controllers\BusinessContentController;
 
 Auth::routes(['verify' => true]);  // This enables email verification routes
 
@@ -73,7 +74,7 @@ Route::middleware(['auth', 'verified'])->group(function (){
     Route::delete('/stall/{id}', [BusinessProfileController::class, 'destroyStall'])->name('stall.delete');
     Route::get('/businessProfile', [ProfileController::class, 'profileIndex'])->name('business.profile.get');
     Route::post('/business-profile/update', [ProfileController::class, 'businessUpdate'])->name('business.profile.update');
-
+    Route::post('/content', [ProfileController::class, 'storeContent'])->name('content.store');
 });
 
 

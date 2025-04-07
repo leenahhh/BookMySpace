@@ -12,6 +12,7 @@ use App\Models\BusinessProfile;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Content;
 
 class ProfileController extends Controller
 {
@@ -126,4 +127,42 @@ class ProfileController extends Controller
 
         return redirect()->route('business.profile.get')->with('success', 'Business profile updated successfully.');
     }
+
+    public function storeContent(Request $request)
+    {
+    // Validate the incoming request
+    $request->validate([
+        'content_image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
+        'content_desc' => 'required|string',
+    ]);
+
+    // Get the authenticated user ID
+    $userId = Auth::id();
+    
+    // Check if the user has a business profile
+    $businessProfile = BusinessProfile::where('user_id', $userId)->first();
+    
+    if (!$businessProfile) {
+        return response()->json(['message' => 'You must create a business profile first.'], 403);
+    }
+
+    // Get the business profile ID
+    $businessId = $businessProfile->id;
+    
+    // Store the content image in S3
+    $imagePath = $request->file('content_image')->store('business_content_images', 's3');
+    $imageUrl = env('AWS_URL') . '/' . $imagePath;
+
+    // Save the content data to the Content table
+    Content::create([
+        'business_id' => $businessId,
+        'content_url' => $imageUrl,
+        'content_desc' => $request->content_desc,
+    ]);
+
+    // Redirect back to the profile page with a success message
+    return redirect()->route('business.profile.get')->with('message', 'Content posted successfully!');
+}
+
+
 }

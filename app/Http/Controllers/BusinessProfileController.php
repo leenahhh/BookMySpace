@@ -13,6 +13,7 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 
 
+
 class BusinessProfileController extends Controller
 {
 
@@ -140,6 +141,8 @@ class BusinessProfileController extends Controller
 
         return redirect()->route('profile.get');
     }
+
+    
 
 
 

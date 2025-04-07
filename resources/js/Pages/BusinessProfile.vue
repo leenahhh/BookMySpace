@@ -1,6 +1,8 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { useForm } from '@inertiajs/inertia-vue3';
 
 const props = defineProps({
   processedProfile: {
@@ -8,6 +10,69 @@ const props = defineProps({
     required: true,
   },
 });
+
+
+const isModalOpen = ref(false);
+// const image = ref(null);
+// const description = ref('');
+const contentUrl = ref(''); // For image preview
+
+// Initialize the form
+const form = useForm({
+  content_desc: '', // description
+  content_image: null, // image file
+});
+
+// Handle image file change and show preview
+const handleImageUpload = (event) => {
+  const file = event.target.files[0];
+
+  if (file) {
+    form.content_image = file; // Store the file in the form data
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      contentUrl.value = e.target.result; // Set image preview
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+// Open and close modal
+const openModal = () => {
+  isModalOpen.value = true;
+};
+
+const closeModal = () => {
+  isModalOpen.value = false;
+  contentUrl.value = ''; // Clear preview
+};
+
+// Handle form submission
+const submitForm = () => {
+  // Clear previous errors for content image
+  form.clearErrors('content_image');
+
+  // Manual validation for content image
+  if (!form.content_image) {
+    form.setError('content_image', 'Please upload a content image.');
+    return;
+  }
+
+  if (form.processing) return;
+
+  // Post the data to the server using Inertia's router
+  form.post('/content', {
+    forceFormData: true, // This is important to send files correctly
+    onSuccess: () => {
+      form.reset(); // Reset form fields
+      contentUrl.value = ''; // Clear the image preview
+      closeModal(); // Close the modal
+    },
+    onFinish: () => {
+      form.clearErrors(); // Optionally clear errors on finish
+    },
+  });
+};
 
 console.log(JSON.stringify(props.processedProfile,null, 2));
 </script>
@@ -78,11 +143,66 @@ console.log(JSON.stringify(props.processedProfile,null, 2));
             >
                 Edit Profile
             </Link>
-            <button
+            <!-- <button
                 class="px-4 py-1 bg-white text-black text-sm rounded border border-black hover:bg-gray-100 transition"
             >
                 + Add Post
+            </button> -->
+            <!-- Button to open the modal -->
+            <button 
+              @click="openModal"
+              class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+            >
+              + Add Post
             </button>
+
+            <!-- Modal -->
+            <div v-if="isModalOpen" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+              <div class="bg-white p-6 rounded-lg w-96">
+                <!-- Close Button -->
+                <button @click="closeModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">
+                  &times;
+                </button>
+
+                <h3 class="text-lg font-bold mb-4 text-center">Upload Post</h3>
+
+                <!-- Form -->
+                <form @submit.prevent="submitForm">
+                  <!-- Image Upload -->
+                  <div class="mb-4">
+                    <input
+                      type="file"
+                      @change="handleImageUpload"
+                      accept="image/*"
+                      class="border p-2 w-full rounded"
+                    />
+                    <div v-if="contentUrl" class="mt-2 w-24 h-24 bg-gray-200">
+                      <img :src="contentUrl" alt="Image Preview" class="w-full h-full object-cover rounded" />
+                    </div>
+                    <span v-if="form.errors.content_image" class="text-red-500 text-sm">{{ form.errors.content_image }}</span>
+                  </div>
+
+                  <!-- Description Field -->
+                  <div class="mb-4">
+                    <textarea
+                      v-model="form.data.content_desc"
+                      placeholder="Enter description..."
+                      rows="4"
+                      class="border p-2 w-full rounded"
+                    ></textarea>
+                    <span v-if="form.errors.content_desc" class="text-red-500 text-sm">{{ form.errors.content_desc }}</span>
+                  </div>
+
+                  <!-- Submit Button -->
+                  <button 
+                    type="submit"
+                    class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                  >
+                    Post
+                  </button>
+                </form>
+              </div>
+            </div>
             </div>
           </div>
         </div>
