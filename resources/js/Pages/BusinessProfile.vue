@@ -1,8 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, useForm  } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import { useForm } from '@inertiajs/inertia-vue3';
 
 const props = defineProps({
   processedProfile: {
@@ -143,12 +142,7 @@ console.log(JSON.stringify(props.processedProfile,null, 2));
             >
                 Edit Profile
             </Link>
-            <!-- <button
-                class="px-4 py-1 bg-white text-black text-sm rounded border border-black hover:bg-gray-100 transition"
-            >
-                + Add Post
-            </button> -->
-            <!-- Button to open the modal -->
+
             <button 
               @click="openModal"
               class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
@@ -167,40 +161,57 @@ console.log(JSON.stringify(props.processedProfile,null, 2));
                 <h3 class="text-lg font-bold mb-4 text-center">Upload Post</h3>
 
                 <!-- Form -->
-                <form @submit.prevent="submitForm">
-                  <!-- Image Upload -->
-                  <div class="mb-4">
-                    <input
-                      type="file"
-                      @change="handleImageUpload"
-                      accept="image/*"
-                      class="border p-2 w-full rounded"
-                    />
-                    <div v-if="contentUrl" class="mt-2 w-24 h-24 bg-gray-200">
-                      <img :src="contentUrl" alt="Image Preview" class="w-full h-full object-cover rounded" />
-                    </div>
-                    <span v-if="form.errors.content_image" class="text-red-500 text-sm">{{ form.errors.content_image }}</span>
-                  </div>
+                <form @submit.prevent="submitForm" class="flex flex-col items-center justify-center space-y-4">
+  <!-- Image Upload Area with Polaroid Style -->
+  <div class="w-48 h-48 bg-white border-2 border-gray-400 rounded-md flex justify-center items-center relative">
+    <input 
+      type="file" 
+      @change="handleImageUpload" 
+      accept="image/*" 
+      class="absolute opacity-0 w-48 h-48 cursor-pointer"
+    />
+    <!-- Image Preview -->
+    <div v-if="contentUrl" class="w-full h-full bg-gray-200 rounded-md overflow-hidden">
+      <img :src="contentUrl" alt="Image Preview" class="w-full h-full object-cover" />
+    </div>
+    <!-- Placeholder text for image upload -->
+    <div v-else class="text-center text-gray-400">
+      <p class="text-5xl">+</p> <!-- Adjusted font size for larger text -->
+    </div>
+  </div>
 
-                  <!-- Description Field -->
-                  <div class="mb-4">
-                    <textarea
-                      v-model="form.data.content_desc"
-                      placeholder="Enter description..."
-                      rows="4"
-                      class="border p-2 w-full rounded"
-                    ></textarea>
-                    <span v-if="form.errors.content_desc" class="text-red-500 text-sm">{{ form.errors.content_desc }}</span>
-                  </div>
+  <!-- Description Field -->
+  <div class="mb-4 w-full max-w-xs">
+    <textarea
+      v-model="form.content_desc"
+      placeholder="Enter description..."
+      rows="4"
+      class="border p-2 w-full rounded"
+    ></textarea>
+    <span v-if="form.errors.content_desc" class="text-red-500 text-sm">{{ form.errors.content_desc }}</span>
+  </div>
 
-                  <!-- Submit Button -->
-                  <button 
-                    type="submit"
-                    class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-                  >
-                    Post
-                  </button>
-                </form>
+  <!-- Submit Button and Cancel Button -->
+  <div class="flex justify-center gap-4 mt-4">
+    <!-- Submit Button -->
+    <button 
+      type="submit"
+      class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+    >
+      Post
+    </button>
+
+    <!-- Cancel Button (Close the Modal) -->
+    <button
+      type="button"
+      @click="closeModal"
+      class="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400"
+    >
+      Cancel
+    </button>
+  </div>
+</form>
+
               </div>
             </div>
             </div>

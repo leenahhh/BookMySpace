@@ -132,7 +132,7 @@ class ProfileController extends Controller
     {
     // Validate the incoming request
     $request->validate([
-        'content_image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
+        'content_image' => 'required|file|mimes:jpg,jpeg,png,gif',
         'content_desc' => 'required|string',
     ]);
 
@@ -163,6 +163,8 @@ class ProfileController extends Controller
     // Redirect back to the profile page with a success message
     return redirect()->route('business.profile.get')->with('message', 'Content posted successfully!');
 }
+
+
 
 
 }
