@@ -70,14 +70,36 @@ class ProfileController extends Controller
         return Redirect::to('/');
     }
 
+    // public function profileIndex(){
+
+    //     $processedProfile = BusinessProfile::with('user')
+    //     ->where('user_id', Auth::id())
+    //     ->first();
+
+    //     return Inertia::render('BusinessProfile', [
+    //         'processedProfile' => $processedProfile,
+    //     ]);
+        
+    // }
+
     public function profileIndex(){
+        $userId = Auth::id();
 
         $processedProfile = BusinessProfile::with('user')
         ->where('user_id', Auth::id())
         ->first();
 
+        // If no profile exists, redirect to registration
+        if (!$processedProfile) {
+            return redirect()->route('business.reg');
+        }
+
+        // Get related content by business_id
+        $content = Content::where('business_id', $processedProfile->id)->get();
+
         return Inertia::render('BusinessProfile', [
             'processedProfile' => $processedProfile,
+            'content' => $content,
         ]);
         
     }
@@ -162,8 +184,27 @@ class ProfileController extends Controller
 
     // Redirect back to the profile page with a success message
     return redirect()->route('business.profile.get')->with('message', 'Content posted successfully!');
-}
+    }
 
+    public function deletePost($id)
+{
+    $post = Content::findOrFail($id);
+
+    // Extract S3 path from URL
+    $url = $post->content_url;
+    $parsedUrl = parse_url($url);
+    $s3Key = ltrim($parsedUrl['path'], '/');
+
+    // Delete from S3
+    if (Storage::disk('s3')->exists($s3Key)) {
+        Storage::disk('s3')->delete($s3Key);
+    }
+
+    // Delete from DB
+    $post->delete();
+
+    return back()->with('success', 'Post deleted successfully.');
+}
 
 
 

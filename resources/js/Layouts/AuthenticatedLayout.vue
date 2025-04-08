@@ -6,8 +6,12 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3'
+
 
 const showingNavigationDropdown = ref(false);
+const businessStatus = usePage().props.businessStatus
+// console.log(businessStatus)
 </script>
 
 <template>
@@ -28,21 +32,30 @@ const showingNavigationDropdown = ref(false);
                                     alt="BMS Logo"
                                     class="block h-9 w-auto"
                                 />
-                            </Link>
+                                </Link>
                             </div>
 
                             <!-- Navigation Links -->
-                            <div
-                                class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
-                            >
+                            <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex items-center">
+                                <!-- Home NavLink -->
                                 <NavLink
                                     :href="route('entrepreneur')"
                                     :active="route().current('entrepreneur')"
                                 >
                                     Home
                                 </NavLink>
+
+                                <!-- Edit Profile NavLink -->
+                                <NavLink
+                                    v-if="businessStatus === 'accepted'"
+                                    :href="route('business.profile.get')"
+                                    :active="route().current('business.profile.get')"
+                                    >
+                                    Profile
+                                </NavLink>
+                                </div>
                             </div>
-                        </div>
+
 
                         <div class="hidden sm:ms-6 sm:flex sm:items-center">
                             <!-- Settings Dropdown -->
@@ -73,11 +86,6 @@ const showingNavigationDropdown = ref(false);
                                     </template>
 
                                     <template #content>
-                                        <DropdownLink
-                                            :href="route('profile.edit')"
-                                        >
-                                            Profile
-                                        </DropdownLink>
                                         <DropdownLink
                                             :href="route('logout')"
                                             method="post"

@@ -75,6 +75,10 @@ Route::middleware(['auth', 'verified'])->group(function (){
     Route::get('/businessProfile', [ProfileController::class, 'profileIndex'])->name('business.profile.get');
     Route::post('/business-profile/update', [ProfileController::class, 'businessUpdate'])->name('business.profile.update');
     Route::post('/content', [ProfileController::class, 'storeContent'])->name('content.store');
+    Route::get('/business/content', [ProfileController::class, 'showBusinessContent'])->name('business.content');
+    Route::delete('/content/{id}', [ProfileController::class, 'deletePost'])->name('content.delete');
+
+
 });
 
 

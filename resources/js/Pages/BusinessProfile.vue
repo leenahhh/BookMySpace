@@ -4,10 +4,39 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { Plus } from 'lucide-vue-next';
+import { router } from '@inertiajs/vue3'
+
+const deletePost = (postId) => {
+  if (confirm('Are you sure you want to delete this post?')) {
+    router.delete(route('content.delete', postId), {
+      onSuccess: () => {
+        selectedPost.value = null // Close modal if open
+      },
+    })
+  }
+}
+
+const selectedPost = ref(null)
+
+const openPostModal = (post) => {
+  selectedPost.value = post
+}
+
+const closePostModal = () => {
+  selectedPost.value = null
+}
+
+const isImage = (url) => {
+  return /\.(jpeg|jpg|gif|png|webp|svg)$/i.test(url)
+}
 
 const props = defineProps({
   processedProfile: {
     type: Object,
+    required: true,
+  },
+  content: {
+    type: Array,
     required: true,
   },
 });
@@ -59,6 +88,7 @@ const submitForm = () => {
     return;
   }
 
+
   // if (form.processing) return;
 
   // Post the data to the server using Inertia's router
@@ -85,12 +115,6 @@ console.log(JSON.stringify(props.processedProfile,null, 2));
     <template #header>
       <div class="flex items-center justify-between">
         <h2 class="text-2xl font-bold text-gray-800">My Profile</h2>
-        <Link
-          href="/profile/edit"
-          class="text-sm text-blue-600 hover:underline"
-        >
-          Edit Profile
-        </Link>
       </div>
     </template>
 
@@ -198,26 +222,26 @@ console.log(JSON.stringify(props.processedProfile,null, 2));
                     <span v-if="form.errors.content_desc" class="text-red-500 text-sm">{{ form.errors.content_desc }}</span>
                   </div>
 
-  <!-- Submit Button and Cancel Button -->
-  <div class="flex justify-center gap-4 mt-4">
-    <!-- Submit Button -->
-    <button 
-      type="submit"
-      class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-    >
-      Post
-    </button>
+                  <!-- Submit Button and Cancel Button -->
+                  <div class="flex justify-center gap-4 mt-4">
+                    <!-- Submit Button -->
+                    <button 
+                      type="submit"
+                      class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                    >
+                      Post
+                    </button>
 
-    <!-- Cancel Button (Close the Modal) -->
-    <button
-      type="button"
-      @click="closeModal"
-      class="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400"
-    >
-      Cancel
-    </button>
-  </div>
-</form>
+                    <!-- Cancel Button (Close the Modal) -->
+                    <button
+                      type="button"
+                      @click="closeModal"
+                      class="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
 
               </div>
             </div>
@@ -227,13 +251,91 @@ console.log(JSON.stringify(props.processedProfile,null, 2));
 
         <!-- Posts Section -->
         <div class="bg-white shadow-md rounded-lg p-6">
-          <h3 class="text-lg font-semibold mb-2 text-gray-800">Posts</h3>
-          <p class="text-sm text-gray-500 italic">
-            No posts yet. Start by adding something!
-          </p>
+
+
+    <h3 class="text-lg font-semibold mb-4 text-gray-800">Posts</h3>
+
+    <!-- Posts Grid -->
+    <div v-if="content.length" class="grid grid-cols-3 gap-2">
+      <div
+        v-for="post in content"
+        :key="post.id"
+        class="relative group aspect-square overflow-hidden bg-gray-100 cursor-pointer"
+        @click="openPostModal(post)"
+      >
+        <img
+          v-if="isImage(post.content_url)"
+          :src="post.content_url"
+          alt="Post Image"
+          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+        <div
+          v-else
+          class="w-full h-full flex items-center justify-center text-blue-600 text-sm px-4 text-center"
+        >
+          <a :href="post.content_url" target="_blank" class="underline break-words">
+            {{ post.content_url }}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div v-else class="text-center py-10 text-gray-500 italic">
+      No posts yet. Start by adding something!
+    </div>
+
+    <!-- Modal -->
+    <div v-if="selectedPost" class="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">
+      <div class="bg-white w-full max-w-md mx-auto rounded-lg overflow-hidden shadow-lg relative">
+        <!-- Close Button -->
+        <button @click="selectedPost = null" class="absolute top-3 right-3 text-gray-500 hover:text-black text-lg">
+          &times;
+        </button>
+
+        <!-- Header -->
+         
+        <!-- Header -->
+        <div class="p-4 border-b font-semibold text-gray-800 flex items-center space-x-3">
+          <!-- Business Logo -->
+          <img
+            :src="processedProfile.logo"
+            alt="Business Logo"
+            class="w-10 h-10 rounded-full object-cover border"
+          />
+
+          <!-- Business Name -->
+          <span>{{ processedProfile.name }}</span>
         </div>
 
+        <!-- Image -->
+        <img :src="selectedPost.content_url" alt="Post" class="w-full object-cover max-h-[400px]" />
+
+        <!-- Caption & Date -->
+        <div class="p-4 flex justify-between items-start">
+          <div>
+            <p class="text-gray-700 mb-2">{{ selectedPost.content_desc }}</p>
+            <p class="text-xs text-gray-500">Posted: {{ new Date(selectedPost.created_at).toLocaleString() }}</p>
+          </div>
+
+          <!-- Delete Icon as Image -->
+          <button
+            @click="deletePost(selectedPost.id)"
+            class="ml-4"
+            title="Delete Post"
+          >
+            <img
+              src="/images/delete.png"
+              alt="Delete"
+              class="w-7 h-7 hover:opacity-70"
+            />
+          </button>
+        </div>
       </div>
+    </div>
+
+
+      </div>
+    </div>
     </div>
   </AuthenticatedLayout>
 </template>

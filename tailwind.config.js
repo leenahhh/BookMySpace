@@ -15,7 +15,7 @@ export default {
     	extend: {
     		fontFamily: {
     			sans: [
-    				'Figtree',
+    				'General Sans',
                     ...defaultTheme.fontFamily.sans
                 ],
 				gSans: [
